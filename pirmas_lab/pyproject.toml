@@ -8,6 +8,8 @@ packages = [{include = "pirmas_lab"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+inquirerpy = "^0.3.4"
+redis = "^4.3.4"
 
 
 [build-system]

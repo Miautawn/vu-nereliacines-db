@@ -1,133 +1,206 @@
 
-from typing import Any
+from typing import Any, Optional, List
 import os
+import sys
+import re
+import json
 
-from redis_connector import db
+from InquirerPy import inquirer
+from InquirerPy.base.control import Choice
 
-PRODUCT_TYPES = {
-    1: "fishing_rod",
-    2: "bait",
-    3: "hook"
-}
+from redis_connector import Redis
+from validators import (
+    EXIT_CODE,
+    check_for_exit_code,
+    validate_product_key,
+    validate_new_product_type,
+    validate_new_product_type_description,
+    validate_new_product_name,
+    validate_new_product_price
+)
 
-def _insert_product_with_price() -> None:
-    macro = db.pipeline()
-    product_key = _insert_product()
-    _change_price(product_key)
-    macro.execute()
+# connecting to redis
+redis = Redis.connect("127.0.0.1", 6379)
+
+@check_for_exit_code
+def _check_inventory(product_key: str) -> bool:
+    return bool(redis.exists(product_key))
+
+@check_for_exit_code
+def _check_available_item_types(product_type: str) -> bool:
+    return bool(redis.sismember("product_types", product_type))
+
+def _get_available_product_keys() -> List[str]:
+    product_keys = [item.decode("utf-8") for item in redis.keys("*:*")]
+    return product_keys
+
+def _get_available_item_types() -> List[str]:
+    item_types = [item.decode("utf-8") for item in redis.smembers("product_types")]
+    return item_types
+
+def select_product_key() -> Optional[str]:
+    available_product_keys = _get_available_product_keys()
+    if not available_product_keys:
+        print("Unfortunately, there are no registered products in DB, please add some!")
+        return None
+
+    product_key_choices = [ Choice(item) for item in available_product_keys ]
+    product_key_choices.append(Choice(EXIT_CODE))
+    product_key = inquirer.select(
+        message="Select a product:",
+        choices=product_key_choices
+    ).execute()
+    if product_key == EXIT_CODE:
+        return None
+    return product_key
+
+def select_product_type_key() -> Optional[str]:
+    available_item_types = _get_available_item_types()
+    if not available_item_types:
+        print("Unfortunately, there are no registered item types in the DB, please add some!")
+        return None
+
+    item_type_choises = [ Choice(item) for item in available_item_types ]
+    item_type_choises.append(Choice(EXIT_CODE))
+    item_type = inquirer.select(
+        message="Select an item type:",
+        choices=item_type_choises
+    ).execute()
+    if item_type == EXIT_CODE:
+        return None
+    return item_type
+
+def ask_for_product_price(product_name: str = "") -> Optional[str]:
+    product_price = inquirer.text(
+        message=f"Enter the price of the new '{product_name}':",
+        validate=validate_new_product_price,
+        invalid_message="Invalid price! It must be a positive number"
+    ).execute()
+    if product_name == EXIT_CODE:
+        return None
+    return product_price
+
+def insert_product_type() -> None:
+    product_type = inquirer.text(
+        message="Please enter a new product type:",
+        validate=validate_new_product_type,
+        invalid_message="Invalid new product type! It must not be empty or contain numbers!"
+    ).execute()
+    if product_type == EXIT_CODE:
+        return None
+    if _check_available_item_types(product_type):
+        print("Unfortunately such product type already exists in the database!")
+        return None
+
+    product_description = inquirer.text(
+        message="Please enter a new product description:",
+        validate=validate_new_product_type_description,
+        invalid_message="Invalid new product description! It can't be empty"
+    ).execute()
+    if product_description == EXIT_CODE:
+        return None
+
+    # add the product type to the product type set
+    # and the description of the the type
+    pipe = redis.pipeline()
+    pipe.sadd("product_types", product_type)
+    pipe.set(product_type, product_description)
+    pipe.execute()
+
+def insert_product() -> None:
+    item_type = select_product_type_key()
+    if item_type == None:
+        return None
+    
+    product_name = inquirer.text(
+        message=f"Enter the ID of the new '{item_type}':",
+        validate=validate_new_product_name,
+        invalid_message="Invalid new product name! It must be only integer numbers!"
+    ).execute()
+    if product_name == EXIT_CODE:
+        return None
+    if _check_inventory(f"{item_type}:{product_name}"):
+        print("Unfortunately such product already exists!")
+        return None
+
+    product_price = ask_for_product_price(f"{item_type}:{product_name}")
+    if not product_price:
+        return None
+
+    # set the item and its price
+    redis.set(f"{item_type}:{product_name}", product_price)
 
 
-def _insert_product() -> str:
+def get_product_price(product_key: str) -> float:
+    return float(redis.get(product_key))
 
-    product_type_key = None
-    brand = None
-    print("Please select the type of product you wish to add!")
-    product_type_selection = int(
-        _ask_for_input(
-    """
-    1 - fishing_rod
-    2 - bait
-    3 - hook
-    """
-        )
-    )
+def get_product_type_description(product_type_key: str):
+    return redis.get(product_type_key).decode("utf-8")
 
-    product_type_key = PRODUCT_TYPES[product_type_selection]
-    brand_selection_key = _ask_for_input("Please enter the brand of the product").strip()
-    full_key = product_type_key + ':' + brand_selection_key
-    print(f"Setting this key: {full_key}")    
+def remove_product(product_key: str) -> None:
+    redis.delete(product_key)
 
-    db.set(full_key, 0.0)
-    return full_key
+def change_product_price(product_key: str, price: str) -> None:
+    redis.set(product_key, price)
 
 
-def _remove_product(key: str) -> None:
-    db.delete(key)
+def main() -> None:
+    print("Welcome to the fish shop, manager!\n")
+    while True:
+        action = inquirer.select(
+            message="Select an action:",
+            choices=[
+                Choice(value=0, name="Get the product type description"),
+                Choice(value=1, name="Get the product price"),
+                Choice(value=2, name="Insert a new product type"),
+                Choice(value=3, name="Insert a new product"),
+                Choice(value=4, name="Remove an existing product"),
+                Choice(value=5, name="Change the price of an existing product"),
+                Choice(value=None, name="Exit"),
+            ],
+        ).execute()
 
-def _get_product_price(key: str) -> float:
-    return float(db.get(key))
+        if action == None:
+            break
+        elif action == 2:
+            insert_product_type()
+        elif action == 3:
+            insert_product()
+        elif action == 0:
+            product_type_key = select_product_type_key()
+            if product_type_key:
+                description = get_product_type_description(product_type_key)
+                print(f"The description of the '{product_type_key}' is: '{description}'")
 
-def _change_price(key: str) -> None:
-    new_price = _ask_for_input("Please enter a new price!")
-    new_price = _validate_price(new_price)
+        elif action == 1:
+            product_key = select_product_key()
+            if product_key:
+                price = get_product_price(product_key)
+                print(f"The price of the '{product_key}' is: {price}")
 
-    db.set(key, new_price)
+        elif action == 4:
+            product_key = select_product_key()
+            if product_key:
+                remove_product(product_key)
+                print(f"Removing {product_key}...DONE")
+            
+        elif action == 5:
+            product_key = select_product_key()
+            if product_key:
+                product_price = ask_for_product_price(product_key)
+                if product_price:
+                    change_product_price(product_key, product_price)
+                    print(f"Changed {product_key} price to {product_price}")
+        
+    
+        print("-"*40)
+        proceed = inquirer.confirm(
+            message="Would you like to query something else?",
+        ).execute()
+        if not proceed:
+            break
+        os.system('clear')
 
-
-def _check_inventory(key: str) -> bool:
-    """
-    Checks whether the key exists in redis
-    """
-    return 1 if db.exists(key) else 0
-
-def _ask_for_input(message: str) -> str:
-    print(message)
-    return input(">> ")
-
-def _validate_price(price: str) -> float:
-    _clear_command_line()
-    if _is_float(price):
-        price = float(price)
-        if price > 0.0:
-            return price
-
-    print("Unfortunately, the price is invalid :(")
-    price = _ask_for_input("Please enter a valid price")
-    return _validate_price(price)
-
-def _is_float(number: Any) -> bool:
-    try:
-        float(number)
-        return True
-    except:
-        return False
-
-def _validate_key(key: str) -> str:
-    _clear_command_line()
-    if _check_inventory(key):
-        return key
-
-    print("Unfortunately, there is no such product with such a key :(")
-    key = _ask_for_input("Please enter the key of your product (e.g. product-type:brand)")
-    return _validate_key(key)
-
-def _clear_command_line() -> None:
-    os.system('clear')
-
-
-
-print("Welcome to the fish shop, manager!")
-while True:
-    # _clear_command_line()
-    print("Please select the command you wish to execute:")
-    print("""
-    1 - get the product price
-    2 - insert a new product
-    3 - insert a new product with price
-    4 - remove an existing product
-    5 - change a prace of an existing product
-    """
-    )
-    response = int(input(">> "))
-
-    if(response == 2):
-        _insert_product()
-        continue
-    elif(response == 3):
-        _insert_product_with_price()
-        continue
-
-
-    product_key = _ask_for_input("Please enter the key of your product (e.g. product-type:brand)")
-
-    if(response == 1):
-        product_key = _validate_key(product_key)
-        price = _get_product_price(product_key)
-        print(f"The price of the product {product_key} is {price}")
-    elif(response == 4):
-        product_key = _validate_key(product_key)
-        _remove_product(product_key)
-    elif(response == 5):
-        product_key = _validate_key(product_key)
-        _change_price(product_key)
+if __name__ == "__main__":
+    main()
     
