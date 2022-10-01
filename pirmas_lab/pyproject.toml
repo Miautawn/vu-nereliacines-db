@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "pirmas-lab"
+version = "0.1.0"
+description = ""
+authors = ["miautawn <miautawn@gmail.com>"]
+readme = "README.md"
+packages = [{include = "pirmas_lab"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
