@@ -16,7 +16,7 @@ def validate_product_key(key: str) -> bool:
 
 @check_for_exit_code
 def validate_product_type_key(key: str) -> bool:
-    return True if key and ':' in key else False
+    return True if key and ':' not in key else False
 
 @check_for_exit_code
 def validate_new_product_type(product_type: str) -> bool:
