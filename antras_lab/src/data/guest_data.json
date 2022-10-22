@@ -1,0 +1,39 @@
+{
+    "guests": [
+        {
+            "name": "some_name_1",
+            "surname": "some_surname_1",
+            "contacts": {
+                "phone": "+3701111111",
+                "email": "name1.surname1@gmail.com"
+            },
+            "keys": [
+                {
+                    "room_number": 111,
+                    "serial_number": 123,
+                    "color": "green"
+                },
+                {
+                    "room_number": 222,
+                    "serial_number": 124,
+                    "color": "blue"
+                }
+            ]
+        },
+        {
+            "name": "some_name_2",
+            "surname": "some_surname_2",
+            "contacts": {
+                "phone": "+3701111111",
+                "email": "name2.surname2@gmail.com"
+            },
+            "keys": [
+                {
+                    "room_number": 333,
+                    "serial_number": 125,
+                    "color": "red"
+                }
+            ]
+        }
+    ]
+}

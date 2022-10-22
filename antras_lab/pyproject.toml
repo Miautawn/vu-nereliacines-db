@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "antras-lab"
+version = "0.1.0"
+description = ""
+authors = ["miautawn <miautawn@gmail.com>"]
+readme = "README.md"
+packages = [{include = "antras_lab"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pymongo = {extras = ["srv"], version = "^4.3.2"}
+inquirerpy = "^0.3.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
