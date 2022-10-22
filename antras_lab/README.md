@@ -3,6 +3,9 @@
 - [how to run]()
 
 ## Database Model
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/24988290/197361836-3d10a1be-0fcb-4c90-a73a-32b837730849.png">
+</p>
 
 ## How to run
 1. Clone the repo `git clone https://github.com/Miautawn/vu-nereliacines-db.git`
