@@ -1,0 +1,52 @@
+{
+    "room_type": [
+        {
+            "type_id": 1,
+            "type": "standard",
+            "beds": 1,
+            "tv": 0,
+            "pool": 0
+        },
+        {
+            "type_id": 2,
+            "type": "king",
+            "beds": 1,
+            "tv": 1,
+            "pool": 0
+        },
+        {
+            "type_id": 3,
+            "type": "presedential",
+            "beds": 2,
+            "tv": 2,
+            "pool": 1
+        }
+    ],
+    "rooms": [
+        {
+            "room_number": 111,
+            "type_id": 1,
+            "price": 200
+        },
+        {
+            "room_number": 222,
+            "type_id": 2,
+            "price": 300
+        },
+        {
+            "room_number": 333,
+            "type_id": 3,
+            "price": 400
+        },
+        {
+            "room_number": 444,
+            "type_id": 1,
+            "price": 150
+        },
+        {
+            "room_number": 555,
+            "type_id": 2,
+            "price": 220
+        }
+    ]
+}
