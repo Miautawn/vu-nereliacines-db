@@ -28,6 +28,16 @@ def get_occupied_rooms(client: Any):
 
     return occupied_rooms
 
+def get_available_rooms(client: Any):
+    occupied_rooms = get_occupied_rooms(client)
+    cursor = client.find(
+        collection = ACCOMMODATION_COLLECTION,
+        search_query = {"room_number": {"$exists":True, "$nin": occupied_rooms}},
+        projection_query = {"room_number": 1},
+    )
+
+    return [room["room_number"] for room in cursor]
+
 
 def get_total_booked_room_price_with_aggregate_pipeline(client: Any):
     stage_lookup_rooms = {
@@ -144,8 +154,9 @@ def main():
             message = "Select an action:",
             choices = [
                 Choice(value = 0, name = "Get all the currently occupied rooms"),
-                Choice(value = 1, name = "Get the total price of all occupied rooms (Aggregation Pipeline)"),
-                Choice(value = 2, name = "Get the total price of all occupied rooms (MapReduce)"),
+                Choice(value = 1, name = "Get all the currently available rooms"),
+                Choice(value = 2, name = "Get the total price of all occupied rooms (Aggregation Pipeline)"),
+                Choice(value = 3, name = "Get the total price of all occupied rooms (MapReduce)"),
             ]
         ).execute()
 
@@ -156,12 +167,18 @@ def main():
                 print("These are the currently occupied rooms:", occupied_rooms)
             else:
                 print("There are no currently occupied rooms!")
-
         if action == 1:
+            unoccupied_rooms = get_available_rooms(hotel_db)
+            if unoccupied_rooms:
+                print("These are the currently free rooms: ", unoccupied_rooms)
+            else:
+                print("There are no currently free rooms!")
+
+        if action == 2:
             total_booking_price = get_total_booked_room_price_with_aggregate_pipeline(hotel_db)
             print("The currently occupied total price is:", total_booking_price)
 
-        if action == 2:
+        if action == 3:
             total_booking_price = get_total_booked_room_price_with_map_reduce(hotel_db)
             print("The currently occupied total price is:", total_booking_price)
 
