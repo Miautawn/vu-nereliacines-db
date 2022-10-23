@@ -3,6 +3,7 @@ import os
 
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
+from bson.code import Code
 
 from mongodb_utils import HotelMongoDBClient
 
@@ -10,6 +11,7 @@ CONNECTION_STRING = "mongodb://127.0.0.1:27017/"
 DB_NAME = "fishing_resort_hotel"
 ACCOMMODATION_COLLECTION = "accomodations"
 GUEST_COLLECTION = "guests"
+MAP_REDUCE_COLLECTION = "map_reduce"
 
 
 def get_occupied_rooms(client: Any):
@@ -51,8 +53,76 @@ def get_total_booked_room_price_with_aggregate_pipeline(client: Any):
     return float(result)
 
 
-def get_total_booked_room_price_with_mad_reduce(client: Any):
-    pass
+def get_total_booked_room_price_with_map_reduce(client: Any):
+    map_guest_function = Code(
+        """
+        function() {
+            for (var i = 0; i < this.keys.length; i++) {
+                emit(this.keys[i].room_number, 0.0);
+            }
+        }
+        """
+    )
+    map_accomodation_function = Code(
+        """
+        function() {
+            if(this.room_number !== undefined) {
+                emit(this.room_number, this.price);
+            }
+        }
+        """
+    )
+
+    map_joined_function = Code(
+        """
+        function() {
+            if(this.value.joined !== undefined)
+            emit(null, this.value.price)
+        }
+        """
+    )
+
+    reduce_function = Code(
+        """
+        function(key, values) {
+            if (values.length == 1) {
+                return values[0]
+            }
+            else {
+                return {price: Array.sum(values), joined: true}
+            }
+        }
+        """
+    )
+
+    # map_reduce the guest keys
+    client.db.command(
+        "mapReduce",
+        value = GUEST_COLLECTION,
+        map = map_guest_function,
+        reduce = reduce_function,
+        out = {"replace": MAP_REDUCE_COLLECTION}
+    )
+
+    # map_reduce the rooms and reduce them on repeating keys from keys
+    client.db.command(
+        "mapReduce",
+        value = ACCOMMODATION_COLLECTION,
+        map = map_accomodation_function,
+        reduce = reduce_function,
+        out = {"reduce": MAP_REDUCE_COLLECTION}
+    )
+
+    # do the final reduce to sum all the values
+    result = client.db.command(
+        "mapReduce",
+        value = MAP_REDUCE_COLLECTION,
+        map = map_joined_function,
+        reduce = reduce_function,
+        out = {"inline": 1}
+    )
+
+    return result["results"][0]["value"]["price"]
 
 def main():
 
@@ -92,7 +162,7 @@ def main():
             print("The currently occupied total price is:", total_booking_price)
 
         if action == 2:
-            total_booking_price = get_total_booked_room_price_with_mad_reduce(hotel_db)
+            total_booking_price = get_total_booked_room_price_with_map_reduce(hotel_db)
             print("The currently occupied total price is:", total_booking_price)
 
         print("\n" + "-"*40)
