@@ -43,7 +43,7 @@ class HotelMongoDBClient:
             self.db[collection].insert_one(data)
         self.db[collection].insert_many(data)
 
-    def find(self, collection: str, search_query: dict, projection_query: dict):
+    def find(self, collection: str, search_query: dict = {}, projection_query: dict= {}):
         return self.db[collection].find(search_query, projection_query)
 
     def aggregate(self, collection: str, pipeline: List[Dict]):

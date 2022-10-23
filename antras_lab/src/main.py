@@ -38,6 +38,70 @@ def get_available_rooms(client: Any):
 
     return [room["room_number"] for room in cursor]
 
+def get_all_rooms(client: Any):
+    cursor = client.find(
+        collection = ACCOMMODATION_COLLECTION,
+        search_query = {"room_number": {"$exists":True}},
+        projection_query = {"room_number": 1},
+    )
+
+    return [room["room_number"] for room in cursor]
+
+def get_all_guests(client: Any):
+    cursor = client.find(
+        collection = GUEST_COLLECTION,
+        projection_query = {"name": 1, "surname": 1}
+    )
+
+    return [[guest["name"], guest["surname"]] for guest in cursor]
+
+def view_guest_info(client: Any):
+    guests = get_all_guests(client)
+
+    guest_choices = [
+        Choice(value = index, name = f"{name[0]} {name[1]}") for index, name in enumerate(guests)
+    ]
+    guest_index = inquirer.select(
+        message = "Please select a guest:",
+        choices = guest_choices
+    ).execute()
+
+    guest_info = list(client.find(
+        collection = GUEST_COLLECTION,
+        search_query = {"name": guests[guest_index][0], "surname": guests[guest_index][1]}
+    ))[0]
+
+    print(f"\nPrinting the info about the guest {guest_info['name']}...")
+    print(f"{'name':<20}{guest_info['name']}")
+    print(f"{'surname':<20}{guest_info['surname']}")
+    print(f"{'phone number':<20}{guest_info['contacts']['phone']}")
+    print(f"{'email addresss':<20}{guest_info['contacts']['email']}")
+    print(f"{'occupied rooms':<20}{[key['room_number'] for key in guest_info['keys']]}")
+
+def view_room_info(client: Any):
+    room_keys = get_all_rooms(client)
+    room_key = inquirer.select(
+        message = "Please select a room:",
+        choices = room_keys
+    ).execute()
+
+    room_info = list(client.find(
+        collection = ACCOMMODATION_COLLECTION,
+        search_query = {"room_number": room_key}
+    ))[0]
+    room_type_info = list(client.find(
+        collection = ACCOMMODATION_COLLECTION,
+        search_query = {"type_id": room_info["type_id"]}
+    ))[0]
+
+    print(f"\nPrinting the info about the room {room_key}...")
+    print(f"{'room type':<20}{room_type_info['type']}")
+    print(f"{'number of beds':<20}{room_type_info['beds']}")
+    print(f"{'number of tv':<20}{room_type_info['tv']}")
+    print(f"{'has pool':<20}{bool(room_type_info['tv'])}")
+    print(f"{'price of the night':<20}{room_info['price']}")
+
+
 
 def get_total_booked_room_price_with_aggregate_pipeline(client: Any):
     stage_lookup_rooms = {
@@ -157,6 +221,8 @@ def main():
                 Choice(value = 1, name = "Get all the currently available rooms"),
                 Choice(value = 2, name = "Get the total price of all occupied rooms (Aggregation Pipeline)"),
                 Choice(value = 3, name = "Get the total price of all occupied rooms (MapReduce)"),
+                Choice(value = 4, name = "View room info"),
+                Choice(value = 5, name = "View guest info"),
             ]
         ).execute()
 
@@ -181,6 +247,12 @@ def main():
         if action == 3:
             total_booking_price = get_total_booked_room_price_with_map_reduce(hotel_db)
             print("The currently occupied total price is:", total_booking_price)
+
+        if action == 4:
+            view_room_info(hotel_db)
+
+        if action == 5:
+            view_guest_info(hotel_db)
 
         print("\n" + "-"*40)
         proceed = inquirer.confirm(
