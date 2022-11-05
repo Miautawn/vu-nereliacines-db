@@ -1,6 +1,6 @@
 # Cassandra
-- [DB model](database_model)
-- [how to run](how_to_run)
+- [DB model](#database-model)
+- [How to run](#how-to-run)
 
 ## Database Model
 <p align="center">
