@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "trecias-lab"
+version = "0.1.0"
+description = ""
+authors = ["miautawn <miautawn@gmail.com>"]
+readme = "README.md"
+packages = [{include = "trecias_lab"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+cassandra-driver = "^3.25.0"
+inquirerpy = "^0.3.4"
+black = "^22.10.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
