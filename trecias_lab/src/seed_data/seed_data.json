@@ -1,0 +1,103 @@
+{
+    "city": {
+        "table_generation_query": "CREATE TABLE city (city text, country text, population int, PRIMARY KEY ((city), country))",
+        "data": [
+            {"city": "Klaipeda", "country": "Lithuania", "population": 150},
+            {"city": "Nida", "country": "Lithuania", "population": 21},
+            {"city": "Palanga", "country": "Lithuania", "population": 32},
+            {"city": "Juodkrante", "country": "Lithuania", "population": 2},
+            {"city": "Gdansk", "country": "Poland", "population": 3000},
+            {"city": "Gdynia", "country": "Poland", "population": 87},
+            {"city": "Riga", "country": "Latvia", "population": 90}
+        ]
+    },
+
+    "city_by_country": {
+        "table_generation_query": "CREATE TABLE city_by_country (country text, city text, population int, PRIMARY KEY ((country), city))",
+        "data": [
+            {"country": "Lithuania", "city": "Klaipeda", "population": 150},
+            {"country": "Lithuania", "city": "Nida", "population": 21},
+            {"country": "Lithuania", "city": "Palanga", "population": 32},
+            {"country": "Lithuania", "city": "Juodkrante", "population": 2},
+            {"country": "Poland", "city": "Gdansk", "population": 3000},
+            {"country": "Poland", "city": "Gdynia", "population": 87},
+            {"country": "Latvia", "city": "Riga", "population": 90}
+        ]
+    },
+
+    "restaurant": {
+        "table_generation_query": "CREATE TABLE restaurant (restaurant text, city text, address text, daily_customers int, PRIMARY KEY ((restaurant), city))",
+        "data": [
+            {"restaurant": "Arciau Juros", "city": "Klaipeda", "address": "surenu g.", "daily_customers": 11},
+            {"restaurant": "Zuvies Rojus", "city": "Klaipeda", "address": "pipienu g.", "daily_customers": 13},
+            {"restaurant": "Paskendes Laivas", "city": "Nida", "address": "akmenes g.", "daily_customers": 33},
+            {"restaurant": "Skanusis Planktonas", "city": "Palanga", "address": "basanaviciaus g.", "daily_customers": 420},
+            {"restaurant": "Skanus Akmuo", "city": "Juodkrante", "address": "vilniaus g.", "daily_customers": 1},
+            {"restaurant": "Smaczna ryba", "city": "Gdansk", "address": "vilniaus1 g.", "daily_customers": 55},
+            {"restaurant": "Olej z ryb", "city": "Gdynia", "address": "vilniaus2 g.", "daily_customers":65},
+            {"restaurant": "Latvijas zivis", "city": "Riga", "address": "vilniaus3 g.", "daily_customers": 57}
+        ]
+    },
+
+    "restaurant_by_city": {
+        "table_generation_query": "CREATE TABLE restaurant_by_city (city text, restaurant text, address text, daily_customers int, PRIMARY KEY ((city), restaurant))",
+        "data": [
+            {"city": "Klaipeda", "restaurant": "Arciau Juros", "address": "surenu g.", "daily_customers": 11},
+            {"city": "Klaipeda", "restaurant": "Zuvies Rojus", "address": "pipienu g.", "daily_customers": 13},
+            {"city": "Nida", "restaurant": "Paskendes Laivas", "address": "akmenes g.", "daily_customers": 33},
+            {"city": "Palanga", "restaurant": "Skanusis Planktonas", "address": "basanaviciaus g.", "daily_customers": 420},
+            {"city": "Juodkrante", "restaurant": "Skanus Akmuo", "address": "vilniaus g.", "daily_customers": 1},
+            {"city": "Gdansk", "restaurant": "Smaczna ryba", "address": "vilniaus1 g.", "daily_customers": 55},
+            {"city": "Gdynia", "restaurant": "Olej z ryb", "address": "vilniaus2 g.", "daily_customers":65},
+            {"city": "Riga", "restaurant": "Latvijas zivis", "address": "vilniaus3 g.", "daily_customers": 57}
+        ]
+    }, 
+
+    "chef": {
+        "table_generation_query": "CREATE TABLE chef (name text, surname text, restaurant text, age int, PRIMARY KEY ((name, surname)))",
+        "data": [
+            {"name": "Sigita", "surname": "Murkute", "restaurant": "Arciau Juros", "age": 2},
+            {"name": "Giedrius", "surname": "Grazevicus", "restaurant": "Zuvies Rojus", "age": 24},
+            {"name": "Solomon", "surname": "Neris", "restaurant": "Paskendes Laivas", "age": 44},
+            {"name": "Karolis", "surname": "Karoliauskas", "restaurant": "Skanusis Planktonas", "age": 12},
+            {"name": "Petras", "surname": "Suodzius", "restaurant": "Skanus Akmuo", "age": 12},
+            {"name": "Juozapas", "surname": "Suodzius", "restaurant": "Skanus Akmuo", "age": 12},
+            {"name": "Alekna", "surname": "Suodzius", "restaurant": "Skanus Akmuo", "age": 12},
+            {"name": "Piotr", "surname": "Piotrovic", "restaurant": "Smaczna ryba", "age": 98},
+            {"name": "Skull", "surname": "Emoji", "restaurant": "Olej z ryb", "age": 99},
+            {"name": "Andrzej", "surname": "Duda", "restaurant": "Latvijas zivis", "age": 23}
+        ]
+    },
+
+    "chef_by_restaurant": {
+        "table_generation_query": "CREATE TABLE chef_by_restaurant (restaurant text, name text, surname text, age int, PRIMARY KEY ((restaurant), name, surname))",
+        "data": [
+            {"restaurant": "Arciau Juros", "name": "Sigita", "surname": "Murkute", "age": 2},
+            {"restaurant": "Zuvies Rojus", "name": "Giedrius", "surname": "Grazevicus", "age": 24},
+            {"restaurant": "Paskendes Laivas", "name": "Solomon", "surname": "Neris", "age": 44},
+            {"restaurant": "Skanusis Planktonas", "name": "Karolis", "surname": "Karoliauskas", "age": 12},
+            {"restaurant": "Skanus Akmuo", "name": "Petras", "surname": "Suodzius", "age": 12},
+            {"restaurant": "Skanus Akmuo", "name": "Juozapas", "surname": "Suodzius", "age": 12},
+            {"restaurant": "Skanus Akmuo", "name": "Alekna", "surname": "Suodzius", "age": 12},
+            {"restaurant": "Smaczna ryba", "name": "Piotr", "surname": "Piotrovic", "age": 98},
+            {"restaurant": "Olej z ryb", "name": "Skull", "surname": "Emoji", "age": 99},
+            {"restaurant": "Latvijas zivis", "name": "Andrzej", "surname": "Duda", "age": 23}
+        ]
+    },
+     
+    "chef_by_city": {
+        "table_generation_query": "CREATE TABLE chef_by_city (city text, name text, surname text, restaurant text, age int, PRIMARY KEY ((city), name, surname))",
+        "data": [
+            {"city": "Klaipeda", "name": "Giedrius", "surname": "Grazevicus", "restaurant": "Zuvies Rojus",  "age": 24},
+            {"city": "Klaipeda", "name": "Sigita", "surname": "Murkute","restaurant": "Arciau Juros",  "age": 2},
+            {"city": "Nida", "name": "Solomon", "surname": "Neris", "restaurant": "Paskendes Laivas", "age": 44},
+            {"city": "Palanga", "name": "Karolis", "surname": "Karoliauskas","restaurant": "Skanusis Planktonas", "age": 12},
+            {"city": "Juodkrante", "name": "Petras", "surname": "Suodzius","restaurant": "Skanus Akmuo", "age": 12},
+            {"city": "Juodkrante", "name": "Juozapas", "surname": "Suodzius","restaurant": "Skanus Akmuo", "age": 12},
+            {"city": "Juodkrante", "name": "Alekna", "surname": "Suodzius","restaurant": "Skanus Akmuo", "age": 12},
+            {"city": "Gdansk", "name": "Piotr", "surname": "Piotrovic","restaurant": "Smaczna ryba", "age": 98},
+            {"city": "Gdynia", "name": "Skull", "surname": "Emoji","restaurant": "Olej z ryb", "age": 99},
+            {"city": "Riga", "name": "Andrzej", "surname": "Duda","restaurant": "Latvijas zivis", "age": 23}
+        ]
+    }
+}
