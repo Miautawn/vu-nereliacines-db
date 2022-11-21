@@ -4,7 +4,7 @@
 
 ## Database Model
 <p align="center">
-  <img src="![image](https://user-images.githubusercontent.com/60518314/203165240-031b0f37-d986-4fc4-be32-0ded55d60bcb.png)">
+  <img src="https://user-images.githubusercontent.com/60518314/203165240-031b0f37-d986-4fc4-be32-0ded55d60bcb.png">
 </p>
 
 ## How to run
