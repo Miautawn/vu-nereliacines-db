@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "ketvirtas-lab"
+version = "0.1.0"
+description = ""
+authors = ["miautawn <miautawn@gmail.com>"]
+readme = "README.md"
+packages = [{include = "ketvirtas_lab"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+neo4j = "^5.2.1"
+inquirerpy = "^0.3.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
